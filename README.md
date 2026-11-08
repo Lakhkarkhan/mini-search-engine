@@ -15,8 +15,8 @@ A full-text search engine built from scratch in Python: an **inverted index**, *
 - **Live updates**: add, replace and delete documents without rebuilding the index
 - **Thread-safe** reads and writes
 - **Persistence**: gzipped JSON, written atomically so a crash cannot corrupt the file
-- **REST API** (FastAPI with automatic Swagger docs), **CLI**, **Docker** and **GitHub Actions CI**
-- **69 tests**, about 98% coverage
+- **REST API** (FastAPI with automatic Swagger docs), **CLI**, **Docker**, **modern web application** and **GitHub Actions CI**
+- **73 tests**, about 98% coverage
 
 ## Quick start
 
@@ -33,6 +33,16 @@ python -m minisearch index sample_docs --out index.json.gz
 python -m minisearch search index.json.gz "inverted index"
 python -m minisearch search index.json.gz '"exact phrase" -java'
 ```
+
+### Web interface
+
+Start the server (see below) and open **http://localhost:8000**. The website includes:
+- **Instant Search**: real-time BM25 search as you type with score bars, highlighted snippets, and term autocomplete.
+- **Full Document Reader**: inspect full text and unique indexed terms extracted for any document.
+- **Documents Library**: browse, filter, edit, delete, and export all indexed documents.
+- **Drag & Drop Import**: multi-file uploader supporting `.txt`, `.md`, and `.json` documents with instant client-side preview.
+- **Index Analytics**: live metric cards, BM25 parameter breakdown, and an interactive top-vocabulary cloud.
+- **Persistence & Theme**: light and dark mode with persistence, and automatic atomic syncing to `index.json.gz`.
 
 ### REST API
 
@@ -80,12 +90,17 @@ The index is stored in a Docker volume. It is saved on shutdown and reloaded on 
 | POST | `/documents/bulk` | Index up to 1,000 documents at once |
 | GET | `/documents/{id}` | Fetch a document |
 | DELETE | `/documents/{id}` | Remove a document |
+| GET | `/documents` | List and filter indexed documents with pagination |
+| DELETE | `/documents` | Clear all documents from index |
+| POST | `/documents/samples` | Load sample documents into the index |
+| GET | `/terms` | List vocabulary terms with document frequencies and prefix search |
+| GET | `/export` | Export all documents in JSON format |
 | GET | `/search?q=&limit=&offset=` | Ranked search with pagination |
 | GET | `/stats` | Index size and statistics |
 | POST | `/save` | Write the index to disk (needs `INDEX_PATH`) |
 | GET | `/health` | Health check |
 
-Set the `INDEX_PATH` environment variable to load an index on startup and save it on shutdown.
+The engine defaults to `index.json.gz` if present, or you can set the `INDEX_PATH` environment variable.
 
 ## How it works
 
@@ -133,6 +148,7 @@ minisearch/
   query.py     # query parser (+, -, "phrases")
   index.py     # inverted index, BM25, snippets, persistence
   api.py       # FastAPI application
+  static/      # web interface (index.html)
   __main__.py  # command-line interface
 tests/         # pytest suite
 scripts/       # benchmark

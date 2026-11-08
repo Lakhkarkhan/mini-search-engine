@@ -102,3 +102,45 @@ def test_index_saved_on_shutdown(tmp_path):
         put(c, "a", "saved on shutdown")
     with TestClient(create_app(index_path=path)) as c:
         assert c.get("/documents/a").status_code == 200
+
+
+def test_web_ui_is_served(client):
+    res = client.get("/")
+    assert res.status_code == 200
+    assert "text/html" in res.headers["content-type"]
+    assert "Mini Search" in res.text
+
+
+def test_list_and_filter_documents(client):
+    put(client, "doc1", "Fast python web server with search", "First Doc")
+    put(client, "doc2", "Machine learning ranking algorithms", "Second Doc")
+
+    res = client.get("/documents").json()
+    assert res["total"] == 2
+    assert len(res["documents"]) == 2
+
+    filtered = client.get("/documents", params={"q": "machine"}).json()
+    assert filtered["total"] == 1
+    assert filtered["documents"][0]["id"] == "doc2"
+
+
+def test_terms_and_export(client):
+    put(client, "doc1", "Full text search with inverted index", "Title 1")
+    res_terms = client.get("/terms", params={"prefix": "invert"}).json()
+    assert res_terms["total"] >= 1
+    assert any(t["term"] == "invert" for t in res_terms["terms"])
+
+    res_export = client.get("/export").json()
+    assert res_export["total"] == 1
+    assert res_export["documents"][0]["id"] == "doc1"
+
+
+def test_clear_and_load_samples(client):
+    put(client, "doc1", "Sample text", "Title")
+    assert client.delete("/documents").json()["cleared"] is True
+    assert client.get("/documents").json()["total"] == 0
+
+    samples_res = client.post("/documents/samples").json()
+    assert samples_res["loaded"] >= 4
+    assert samples_res["total_documents"] >= 4
+
