@@ -1,0 +1,3 @@
+Docker basics
+
+A container packages an application together with its dependencies so it runs the same way everywhere. A Dockerfile describes how to build the image, and docker compose starts several containers, such as an API and a database, with a single command.

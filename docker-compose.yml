@@ -1,0 +1,10 @@
+services:
+  search:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - searchdata:/data   # the index is saved here on shutdown and reloaded on start
+
+volumes:
+  searchdata:

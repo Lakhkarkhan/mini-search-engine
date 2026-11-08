@@ -1,0 +1,3 @@
+Testing Python programs with pytest
+
+Automated tests catch bugs before users do. With pytest, a test is just a function whose name starts with test. Fixtures provide reusable setup, and parametrized tests run the same check against many inputs. Good test suites run on every push using continuous integration.
